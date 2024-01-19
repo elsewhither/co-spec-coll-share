@@ -9,6 +9,6 @@ author, as well as which items are available to view and/or reserve. The field l
 designated with both efficiency and scaling in mind
 
 ## Entity Relationship Diagram
-
+![alt text](EntityRelationships.png)
 
 ## Data Dictionary
