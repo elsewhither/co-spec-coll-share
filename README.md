@@ -1,4 +1,4 @@
-# co-spec-coll-share
+# Essex Country Special Collections Record Share Database
 This MySQL database is a proof of concept for the sharing of records between a small
 consortium of 2 libraries, 1 museum and 1 archive. The example data is fictional and refers to
 locations mentioned in H.P. Lovecraft’s Cthulhu mythos, along with actual historic books that are
