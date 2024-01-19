@@ -1,0 +1,251 @@
+
+--
+-- pulls all records from everywhere
+--
+
+SELECT * 
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id;
+
+--
+-- pulls all records together in an organized way
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id;
+
+--
+-- query by type of location
+--
+-- returns items from only libraries
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.type = 'library';
+
+--
+-- returns items from only museums
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.type = 'museum';
+
+--
+-- returns items from only archives
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.type = 'archive';
+
+--
+-- query by location with concenated addresses
+--
+-- returns items located at Newburyport Historical Society
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  CONCAT(location.address, ', ', location.city, ', ', location.state, ', ',
+         location.zip) AS address,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.location_id = 1;
+
+--
+-- returns items located at Newburyport Public Library
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  CONCAT(location.address, ', ', location.city, ', ', location.state, ', ',
+         location.zip) AS address,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.location_id = 2;
+
+--
+-- returns items located at Miskatonic University Library
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  CONCAT(location.address, ', ', location.city, ', ', location.state, ', ',
+         location.zip) AS address,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.location_id = 3;
+
+--
+-- returns items located at Miskatonic University Museum
+--
+
+SELECT item.item_id, catalog.title, 
+	CONCAT_WS('', catalog.au_last, ', ', catalog.au_first) AS author, 
+	catalog.pub_year AS year, catalog.lang AS language, 
+	location.loc_name AS location, 
+  location.type AS location_type,
+  CONCAT(location.address, ', ', location.city, ', ', location.state, ', ',
+         location.zip) AS address,
+  catalog.oclc, catalog.catalog_id
+FROM catalog
+INNER JOIN item
+ON catalog.catalog_id = item.catalog_id
+INNER JOIN location
+ON item.location_id = location.location_id
+WHERE location.location_id = 1;
+
+--
+-- Aggregates
+--
+-- count number of authors in combined collection
+--
+
+SELECT COUNT(DISTINCT au_last) AS Number_of_Authors
+FROM catalog;
+
+--
+-- count total number of items
+--
+
+SELECT COUNT(DISTINCT item_id) AS Total_Number_of_items
+FROM item;
+
+--
+-- count of items held by each location
+--
+
+SELECT location.loc_name AS location, COUNT(DISTINCT item.item_id) AS items_held 
+FROM item
+INNER JOIN location
+ON item.location_id = location.location_id
+GROUP BY location.loc_name;
+
+--
+-- count of items by location type
+--
+
+SELECT location.type AS location_type, COUNT(DISTINCT item.item_id) AS items_held 
+FROM item
+INNER JOIN location
+ON item.location_id = location.location_id
+GROUP BY location.type;
+
+--
+-- number of works by authors in collection
+--
+
+SELECT au_last AS author,
+	COUNT(*) AS works
+FROM catalog
+GROUP BY au_last
+ORDER BY works DESC;
+
+--
+--total available, unavailable, and percent of items in entire system
+--
+
+SELECT SUM(available) AS available, 
+	SUM(available = 0) AS unavailable,
+    SUM(available = 1) / COUNT(*) * 100 AS percent_available
+FROM item;
+
+--
+-- available and unavailable items by location
+--
+
+SELECT location.loc_name AS location, 
+	SUM(item.available) AS available, 
+    SUM(item.available = 0) AS unavailable
+FROM item
+INNER JOIN location
+ON item.location_id = location.location_id
+GROUP BY location.loc_name
+ORDER BY available DESC;
+
+--
+-- available and unavailable items by location type
+--
+
+SELECT location.type AS location_type, 
+	SUM(item.available) AS available, 
+    SUM(item.available = 0) AS unavailable
+FROM item
+INNER JOIN location
+ON item.location_id = location.location_id
+GROUP BY location.type
+ORDER BY available DESC;
+
+--
+-- total and percentage of languages in all works
+--
+
+SELECT catalog.lang AS language,
+	COUNT(item.item_id) AS works
+FROM catalog
+INNER JOIN item
+ON item.catalog_id = catalog.catalog_id
+GROUP BY catalog.lang
+ORDER by works DESC;
